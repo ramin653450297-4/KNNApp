@@ -3,48 +3,69 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
+from textblob import TextBlob
 import joblib
 
-# สมมติว่าคุณมี dataset ที่ชื่อว่า dataset.csv
-# อ่านข้อมูลจากไฟล์ CSV
+# Load the dataset
 data = pd.read_csv('vaccination_all_tweets.csv')
 
-# สมมติว่า dataset มีฟีเจอร์เหล่านี้: 'user_name', 'user_location', 'user_description', 'text', 'hashtags', 'retweets', 'favorites'
-# และคอลัมน์เป้าหมาย (target column) คือ 'label' (ที่คุณต้องการคาดเดา เช่น 1 = Retweet, 0 = Not Retweet)
-
-# ก่อนอื่นเราต้องทำการแปลงข้อมูลที่เป็นข้อความให้เป็นตัวเลข (หากจำเป็น)
+# Initialize LabelEncoder
 le = LabelEncoder()
 
-# คุณอาจต้องการแปลงฟีเจอร์ที่เป็นประเภท (categorical features) เช่น user_name, user_location
+# Encode categorical features
 data['user_name_enc'] = le.fit_transform(data['user_name'])
 data['user_location_enc'] = le.fit_transform(data['user_location'])
 data['user_description_enc'] = le.fit_transform(data['user_description'])
 data['text_enc'] = le.fit_transform(data['text'])
 data['hashtags_enc'] = le.fit_transform(data['hashtags'])
 
-# เลือกฟีเจอร์ (features) สำหรับการฝึกโมเดล
-X = data[['user_name_enc', 'user_location_enc', 'user_description_enc', 'text_enc', 'hashtags_enc', 'retweets', 'favorites']]
+# Define features and target variable
+X = data.drop('is_retweet', axis=1)
+y = data['is_retweet']  # Target variable
 
-# กำหนดคอลัมน์เป้าหมาย (label)
-y = data['is_retweet']  # คอลัมน์นี้ต้องประกอบด้วยค่าที่คุณต้องการให้โมเดลทำนาย เช่น 1 หรือ 0
+# Select features for training the model
+features = X[['user_name_enc', 'user_location_enc', 'user_description_enc', 'text_enc', 'hashtags_enc', 'retweets', 'favorites']]
 
-# แบ่งข้อมูลสำหรับการฝึกโมเดลและการทดสอบ (training and testing)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(features, y, test_size=0.2, random_state=42)
 
-# สร้างโมเดล Decision Tree
+# Create and train the Decision Tree model
 model = DecisionTreeClassifier()
-
-# ฝึกโมเดล
 model.fit(X_train, y_train)
 
-# ทำนายผลลัพธ์สำหรับข้อมูลทดสอบ
+# Predict the outcomes for the test set
 y_pred = model.predict(X_test)
 
-# ประเมินความแม่นยำของโมเดล
+# Evaluate the accuracy of the model
 accuracy = accuracy_score(y_test, y_pred)
 print(f'Accuracy: {accuracy * 100:.2f}%')
 
-# บันทึกโมเดลที่ฝึกแล้วลงในไฟล์ .pkl
+# Save the trained model to a file
 joblib.dump(model, 'decision_tree_model.pkl')
-
 print("Model saved as decision_tree_model.pkl")
+
+# Function for sentiment analysis
+def analyze_sentiment(text):
+    blob = TextBlob(text)
+    polarity = blob.sentiment.polarity  # Polarity score between -1 (negative) and 1 (positive)
+
+    # Determine sentiment result based on polarity
+    if polarity > 0:
+        return 'Positive'
+    elif polarity < 0:
+        return 'Negative'
+    else:
+        return 'Neutral'
+
+# Apply sentiment analysis to the 'text' column of your dataset
+data['sentiment_result'] = data['text'].apply(analyze_sentiment)
+
+# Optionally encode the sentiment results for further modeling
+data['sentiment_encoded'] = data['sentiment_result'].map({'Positive': 1, 'Neutral': 0, 'Negative': -1})
+
+# Print the updated DataFrame with sentiment results
+print(data[['text', 'sentiment_result', 'sentiment_encoded']].head())
+
+# Save the updated dataset with sentiment results to a new CSV file
+data.to_csv('vaccination_with_sentiment.csv', index=False)
+print("Sentiment analysis complete. Results saved to 'vaccination_with_sentiment.csv'.")

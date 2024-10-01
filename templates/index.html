@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            margin: auto;           
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .result {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="text-align: center;">User Information</h2>
+    <form action="/predict" method="post">
+        <label for="user_name">User Name:</label>
+        <input type="text" id="user_name" name="user_name" required>
+
+        <label for="user_location">User Location:</label>
+        <input type="text" id="user_location" name="user_location">
+
+        <label for="user_description">User Description:</label>
+        <textarea id="user_description" name="user_description" rows="3"></textarea>
+
+        <label for="text">Text:</label>
+        <textarea id="text" name="text" rows="3" required></textarea>
+
+        <label for="hashtags">Hashtags:</label>
+        <input type="text" id="hashtags" name="hashtags">
+
+        <label for="retweets">Retweets:</label>
+        <input type="number" id="retweets" name="retweets" min="0" required>
+
+        <label for="favorites">Favorites:</label>
+        <input type="number" id="favorites" name="favorites" min="0" required>
+
+        <input type="submit" value="Submit">
+    </form>
+
+    <!-- Display the result if available -->
+    {% if sentiment_result %}
+    <div class="result">
+        <h3>Prediction Result: {{ sentiment_result }}</h3>
+    </div>
+    {% endif %}
+   
+</body>
+</html>
