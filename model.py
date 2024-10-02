@@ -21,7 +21,7 @@ data['hashtags_enc'] = le.fit_transform(data['hashtags'])
 
 # Define features and target variable
 X = data.drop('is_retweet', axis=1)
-y = data['is_retweet']  # Target variable
+y = data['is_retweet']  
 
 # Select features for training the model
 features = X[['user_name_enc', 'user_location_enc', 'user_description_enc', 'text_enc', 'hashtags_enc', 'retweets', 'favorites']]
@@ -65,7 +65,3 @@ data['sentiment_encoded'] = data['sentiment_result'].map({'Positive': 1, 'Neutra
 
 # Print the updated DataFrame with sentiment results
 print(data[['text', 'sentiment_result', 'sentiment_encoded']].head())
-
-# Save the updated dataset with sentiment results to a new CSV file
-data.to_csv('vaccination_with_sentiment.csv', index=False)
-print("Sentiment analysis complete. Results saved to 'vaccination_with_sentiment.csv'.")
